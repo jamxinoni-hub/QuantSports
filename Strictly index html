@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantSports Ticket & Odds Optimizer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b',
+                        },
+                        accent: {
+                            cyan: '#06b6d4',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e',
+                            purple: '#8b5cf6'
+                        },
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                        borderbg: '#334155'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+        .glow-emerald {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+        }
+        .glow-purple {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between pb-12 sm:pb-0">
+
+    <!-- Header Navigation -->
+    <header class="bg-cardbg border-b border-borderbg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-brand-500/10 rounded-xl border border-brand-500/30 text-brand-500">
+                        <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight tracking-wide text-white">Ticket <span class="text-brand-500">Optimizer</span> Engine</h1>
+                        <p class="text-xs text-gray-400">Code & Screenshot OCR Risk Filter</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-2 text-xs font-semibold">
+                    <span class="px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Risk Filtering Active
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow space-y-6">
+
+        <!-- Notification Alert Toast -->
+        <div id="toast" class="hidden fixed bottom-5 right-5 z-50 p-4 rounded-xl shadow-2xl border transition-all duration-300 flex items-center gap-3 max-w-sm">
+            <i id="toast-icon" class="fa-solid text-lg"></i>
+            <span id="toast-message" class="text-xs font-semibold"></span>
+        </div>
+
+        <!-- TOP SECTION: CODE & IMAGE UPLOADER -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Booking Code Input Box -->
+            <div class="bg-cardbg border border-borderbg rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+                <div class="flex justify-between items-center border-b border-borderbg pb-3">
+                    <h2 class="text-md font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-barcode text-brand-500"></i> Bet Booking Code Import
+                    </h2>
+                    <span class="text-[10px] bg-slate-900 border border-borderbg px-2 py-0.5 rounded text-gray-400 font-mono">SportyBet / Stake / 1xBet</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1.5">Paste Booking Code or Raw Match List</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="input-booking-code" placeholder="e.g. BC-8F92A1 or paste games text..." class="w-full bg-slate-900 border border-borderbg rounded-xl px-3.5 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-brand-500 uppercase tracking-wider">
+                        <button onclick="parseBookingCode()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-download"></i> Load Ticket
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 p-3 rounded-xl border border-borderbg flex items-center justify-between">
+                    <span class="text-xs text-gray-400">Sample Mock Tickets:</span>
+                    <div class="flex gap-2">
+                        <button onclick="loadSampleTicket('high_risk')" class="px-2.5 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded text-xs font-semibold hover:bg-rose-500/20">High Risk Ticket</button>
+                        <button onclick="loadSampleTicket('mixed')" class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded text-xs font-semibold hover:bg-amber-500/20">Mixed Ticket</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OCR Screenshot Upload Box -->
+            <div class="bg-cardbg border border-borderbg rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+                <div class="flex justify-between items-center border-b border-borderbg pb-3">
+                    <h2 class="text-md font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-camera text-accent-cyan"></i> OCR Screenshot Scanner
+                    </h2>
+                    <span class="text-[10px] bg-slate-900 border border-borderbg px-2 py-0.5 rounded text-cyan-400 font-mono">PNG / JPG / WEBP</span>
+                </div>
+
+                <div id="drop-zone" class="border-2 border-dashed border-borderbg hover:border-cyan-400 rounded-xl p-6 text-center bg-slate-900/40 cursor-pointer transition-all duration-200" onclick="triggerFileInput()">
+                    <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                        <div class="w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xl">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-gray-200 block">Tap to upload ticket screenshot</span>
+                            <span class="text-[11px] text-gray-500 block">Simulates computer vision match & market extraction</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MIDDLE SECTION: TARGET ODDS & OPTIMIZATION CONTROLS -->
+        <div class="bg-cardbg border border-borderbg rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-borderbg pb-4">
+                <div>
+                    <h2 class="text-md font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-accent-purple"></i> Target Odds & Risk Optimization Controls
+                    </h2>
+                    <p class="text-xs text-gray-400">Set your exact accumulator window and apply quantitative risk filters.</p>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="filterUnsafeLegs()" class="px-3.5 py-2 bg-rose-600/20 border border-rose-500/40 text-rose-300 hover:bg-rose-600/30 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-filter text-rose-400"></i> Strip Unsafe Legs
+                    </button>
+                    <button onclick="optimizeToTargetOdds()" class="px-3.5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md glow-emerald">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Optimize to Target Range
+                    </button>
+                    <button onclick="generateSystemPermutations()" class="px-3.5 py-2 bg-accent-purple/20 border border-accent-purple/40 text-purple-300 hover:bg-purple-600/30 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-diagram-project text-purple-400"></i> Generate Safe System
+                    </button>
+                </div>
+            </div>
+
+            <!-- Target Range Inputs -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-slate-900/60 p-4 rounded-xl border border-borderbg">
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Target Minimum Odds</label>
+                    <input type="number" id="opt-target-min" value="5.00" step="0.1" class="w-full bg-cardbg border border-borderbg rounded-lg px-3 py-1.5 text-sm font-bold text-emerald-400 focus:outline-none focus:border-brand-500" oninput="renderTicketTable()">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Target Maximum Odds</label>
+                    <input type="number" id="opt-target-max" value="5.99" step="0.1" class="w-full bg-cardbg border border-borderbg rounded-lg px-3 py-1.5 text-sm font-bold text-emerald-400 focus:outline-none focus:border-brand-500" oninput="renderTicketTable()">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Base Stake ($)</label>
+                    <input type="number" id="opt-stake" value="50" step="5" class="w-full bg-cardbg border border-borderbg rounded-lg px-3 py-1.5 text-sm font-bold text-white focus:outline-none focus:border-brand-500" oninput="renderTicketTable()">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Current Ticket Odds</label>
+                    <div class="h-9 bg-slate-900 border border-borderbg rounded-lg px-3 flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Combined:</span>
+                        <span class="text-base font-extrabold text-white" id="out-ticket-odds">1.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM SECTION: LOADED LEGS TABLE & OPTIMIZED OUTPUT -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Ticket Legs Table -->
+            <div class="lg:col-span-2 bg-cardbg border border-borderbg rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+                <div class="flex justify-between items-center border-b border-borderbg pb-3">
+                    <h3 class="text-md font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-brand-500"></i> Analyzed Match Selections (<span id="leg-count-badge">0</span>)
+                    </h3>
+                    <button onclick="addManualLeg()" class="text-xs text-brand-500 hover:text-brand-400 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> Add Leg
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-gray-300">
+                        <thead class="bg-slate-900 text-gray-400 uppercase text-[10px] font-bold border-b border-borderbg">
+                            <tr>
+                                <th class="p-3">Match</th>
+                                <th class="p-3">Market Selected</th>
+                                <th class="p-3 text-right">Odds</th>
+                                <th class="p-3 text-center">Safety Rating</th>
+                                <th class="p-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticket-table-body" class="divide-y divide-borderbg bg-slate-900/40">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Output & Copy Panel -->
+            <div class="bg-cardbg border border-borderbg rounded-2xl p-5 sm:p-6 shadow-xl flex flex-col justify-between space-y-5">
+                <div class="space-y-4">
+                    <h3 class="text-md font-bold text-gray-200 border-b border-borderbg pb-3 flex items-center justify-between">
+                        <span>Optimized Ticket Summary</span>
+                        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                    </h3>
+
+                    <!-- Status Indicator Banner -->
+                    <div id="target-status-banner" class="p-3.5 rounded-xl border flex items-center gap-3 transition-all">
+                        <i id="target-status-icon" class="fa-solid text-lg"></i>
+                        <div>
+                            <h4 id="target-status-title" class="text-xs font-bold uppercase tracking-wider"></h4>
+                            <p id="target-status-desc" class="text-xs opacity-90"></p>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Breakdown -->
+                    <div class="space-y-2.5">
+                        <div class="bg-slate-900 p-3 rounded-xl border border-borderbg flex justify-between items-center">
+                            <span class="text-xs text-gray-400">Combined Odds</span>
+                            <span class="text-xl font-black text-white" id="summary-odds">1.00</span>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-borderbg flex justify-between items-center">
+                            <span class="text-xs text-gray-400">Implied Probability</span>
+                            <span class="text-sm font-bold text-cyan-400" id="summary-prob">0%</span>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-borderbg flex justify-between items-center">
+                            <span class="text-xs text-gray-400">Potential Payout</span>
+                            <span class="text-lg font-bold text-emerald-400" id="summary-payout">$0.00</span>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-borderbg flex justify-between items-center">
+                            <span class="text-xs text-gray-400">Ticket Safety Score</span>
+                            <span class="text-sm font-extrabold" id="summary-safety-score">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export / Copy Button -->
+                <div class="space-y-2 pt-2">
+                    <button onclick="copyOptimizedTicket()" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-copy"></i> Copy Optimized Slip to Clipboard
+                    </button>
+                    <p class="text-[10px] text-gray-500 text-center">Copies optimized match list & leg recommendations to pastable text format.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-cardbg border-t border-borderbg py-4 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto px-4">
+            QuantSports Ticket & Odds Optimizer Dashboard &copy; 2026. Built strictly for mathematical risk analysis and ticket optimization.
+        </div>
+    </footer>
+
+    <!-- JS Application Logic -->
+    <script>
+        // Market Safety Risk Lookup Table
+        const MARKET_SAFETY_LOOKUP = {
+            'Double Chance (1X/X2)': { tier: 'HIGH', score: 95, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+            'Team Over 0.5 Goals': { tier: 'HIGH', score: 90, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+            'Over 1.5 Total Goals': { tier: 'HIGH', score: 88, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+            'Handicap +2 font-mono': { tier: 'HIGH', score: 85, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+            'Over 2.5 Total Goals': { tier: 'MEDIUM', score: 65, color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
+            'Both Teams to Score (GG)': { tier: 'MEDIUM', score: 55, color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
+            '1st Half Over 0.5': { tier: 'MEDIUM', score: 60, color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
+            'Straight Win (1/2)': { tier: 'MEDIUM', score: 50, color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
+            '1st Half Both Teams Score (GG)': { tier: 'LOW', score: 25, color: 'text-rose-400 bg-rose-500/10 border-rose-500/30' },
+            'Straight Draw (X)': { tier: 'LOW', score: 20, color: 'text-rose-400 bg-rose-500/10 border-rose-500/30' },
+            'Correct Score': { tier: 'LOW', score: 10, color: 'text-rose-400 bg-rose-500/10 border-rose-500/30' },
+            'Halftime / Fulltime': { tier: 'LOW', score: 30, color: 'text-rose-400 bg-rose-500/10 border-rose-500/30' }
+        };
+
+        // Active Ticket Data State
+        let ticketLegs = [];
+
+        // Pre-loaded Sample Tickets
+        const SAMPLES = {
+            high_risk: [
+                { id: 1, match: 'Arsenal vs Chelsea', market: '1st Half Both Teams Score (GG)', odds: 4.20 },
+                { id: 2, match: 'Real Madrid vs Barcelona', market: 'Straight Draw (X)', odds: 3.60 },
+                { id: 3, match: 'Bayern Munich vs Dortmund', market: 'Correct Score', odds: 9.50 }
+            ],
+            mixed: [
+                { id: 1, match: 'Man City vs Everton', market: 'Double Chance (1X/X2)', odds: 1.22 },
+                { id: 2, match: 'Liverpool vs Wolves', market: 'Team Over 0.5 Goals', odds: 1.18 },
+                { id: 3, match: 'Inter vs Milan', market: 'Both Teams to Score (GG)', odds: 1.75 },
+                { id: 4, match: 'Juventus vs Roma', market: 'Straight D
